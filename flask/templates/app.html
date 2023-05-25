@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <title>列車遅延情報</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+    <meta http-equiv="refresh" content="10" URL="app.html">
+</head>
+
+<body>
+    <div id="main-container">
+        <h1 id="title">列車遅延情報</h1>
+        <div id="last-time-tag">
+            <p id="last-time">最終更新時刻: {{ train_info.current_time }}</p>
+        </div>
+        <ul>
+            {% for info in train_info.train_info %}
+            <li>
+                {% if info.status.endswith('！') %}
+                <div id="trouble-status-tag">
+                    <h2 id="trouble-status">{{ info.status }}</h2>
+                    <p id="trouble-content">{{ info.content }}</p>
+                </div>
+                {% else %}
+                <div id="normal-status-tag" class="{{ info.color }}">
+                    <h2 id="normal-status">{{ info.status }}</h2>
+                    <p id="normal-content">特に情報はありません</p>
+                </div>
+                {% endif %}
+                </h2>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+</body>
+
+</html>
