@@ -74,8 +74,7 @@ def update_train_info():
     }
 
 def get_nobori_nearest_times(csv_file):
-    now = datetime.now()
-    now= datetime(2023, 5, 26, 8, 23, 00)    
+    now = datetime.now() 
     current_date = datetime.now().date()   
     kanji_pattern = re.compile(r'[\u4E00-\u9FFF]')
     
@@ -181,14 +180,12 @@ def get_table():
     kudari_table = []
     print("下り")
     for kudari_time, kudari_destination in kudari_nearest_times:    
-        print(f'{kudari_time.strftime("%H:%M")} / {kudari_destination}')
         kudari_table.append({'出発時刻': kudari_time.strftime("%H:%M"), '目的地': kudari_destination})
 
     print("上り")
     global nobori_table
     nobori_table = []
     for nobori_time, nobori_destination in nobori_nearest_times:    
-        print(f'{nobori_time.strftime("%H:%M")} / {nobori_destination}')
         nobori_table.append({'出発時刻': nobori_time.strftime("%H:%M"), '目的地': nobori_destination})
 
     now_time = datetime.now().strftime("%H:%M:%S")
