@@ -1,4 +1,4 @@
-from flask import Flask, render_template, jsonify
+from flask import Flask, render_template
 import requests
 from bs4 import BeautifulSoup
 import datetime
@@ -6,11 +6,14 @@ import time
 import csv
 import re
 import jpholiday
+import json
 
 
 app = Flask(__name__, static_folder='static')
 
 train_info = {}
+
+
 
 
 def get_train_color(text):
@@ -30,32 +33,77 @@ def get_train_color(text):
         return 'chiyoda-line'
     else:
         return 'Error'
+    
+"""
+import json
+
+
+sample_dict = {'A': 'apple', 'B': 'banana', 'C': 'carrot', 'D': 'drink', 'E': 'egg'}
+
+with open('./sample.json', 'w') as f:
+    json.dump(sample_dict, f, indent=4)
+
+
+このコードを実行すると、以下のような JSON ファイルが出力されます。
+
+{
+    "A": "apple",
+    "B": "banana",
+    "C": "carrot",
+    "D": "drink",
+    "E": "egg"
+}
+"""    
 
 
 def get_content(text: str, url):
+    current_date = datetime.datetime.now().date().strftime("%Y-%m-%d")    
+    current_time = datetime.datetime.now().strftime("%H:%M%:S")
     request = requests.get(url)
     soup = BeautifulSoup(request.text, 'html.parser')
     bool_trouble = soup.find('dd', class_='trouble')
+
     if bool_trouble:
         content = bool_trouble.find('p')
         if content:
-            return {
+            output = {
+                "date": current_date,
+                "time": current_time,                
                 "status": f'{text}は遅延しています！',
                 "content": f'{content.text}',
                 "color": get_train_color(text)
             }
         else:
-            return {
+            output = {
+                "date": current_date,
+                "time": current_time,                
                 "status": f'{text}は遅延しています！',
                 "content": '遅延情報が見つかりませんでした',
                 "color": get_train_color(text)
             }
     else:
-        return {
-            "status": f'{text}は通常運転です',
-            "content": None,
-            "color": get_train_color(text)
+        output =  {
+                "date": current_date,
+                "time": current_time,            
+                "status": f'{text}は通常運転です',
+                "content": None,
+                "color": get_train_color(text)
         }
+
+    file_path = f"./delay-info/{text}.json"
+    
+    try:
+        with open(file_path, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+    except FileNotFoundError:
+        data = []
+
+    data.append(output)
+
+    with open(file_path, 'w', encoding='utf-8') as f:
+        json.dump(data, f, ensure_ascii=False, indent=4) 
+
+    return output
 
 
 def update_train_info():
@@ -220,5 +268,5 @@ if __name__ == '__main__':
     app.run(port=8000)
 
     while True:
-        time(300)
+        time(3)
         app.run(port=8000)
