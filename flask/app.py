@@ -58,7 +58,7 @@ with open('./sample.json', 'w') as f:
 
 def get_content(text: str, url):
     current_date = datetime.datetime.now().date().strftime("%Y-%m-%d")    
-    current_time = datetime.datetime.now().strftime("%H:%M%:S")
+    current_time = datetime.datetime.now().strftime("%H:%M:%S")
     request = requests.get(url)
     soup = BeautifulSoup(request.text, 'html.parser')
     bool_trouble = soup.find('dd', class_='trouble')
