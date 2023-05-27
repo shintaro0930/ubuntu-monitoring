@@ -268,5 +268,5 @@ if __name__ == '__main__':
     app.run(port=8000)
 
     while True:
-        time(3)
+        time(300)
         app.run(port=8000)
