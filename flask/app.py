@@ -117,7 +117,7 @@ def get_nobori_nearest_times(csv_file):
     for time, destination in times:
         if time >= now:
             nearest_times.append((time, destination))
-        if len(nearest_times) == 3:
+        if len(nearest_times) == 5:
             break
     
     return nearest_times
@@ -163,7 +163,7 @@ def get_kudari_nearest_times(csv_file):
     for time, destination in times:
         if time >= now:
             nearest_times.append((time, destination))
-        if len(nearest_times) == 3:
+        if len(nearest_times) == 5:
             break
     
     return nearest_times
