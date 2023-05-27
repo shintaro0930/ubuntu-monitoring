@@ -1,10 +1,11 @@
 from flask import Flask, render_template, jsonify
 import requests
 from bs4 import BeautifulSoup
-from datetime import datetime
+import datetime
 import time
 import csv
 import re
+import jpholiday
 
 
 app = Flask(__name__, static_folder='static')
@@ -58,7 +59,7 @@ def get_content(text: str, url):
 
 
 def update_train_info():
-    current_time = datetime.now().strftime("%H時%M分")
+    current_time = datetime.datetime.now().strftime("%H時%M分")
     global train_info
     train_info = {
         "current_time": current_time,
@@ -74,8 +75,8 @@ def update_train_info():
     }
 
 def get_nobori_nearest_times(csv_file):
-    now = datetime.now() 
-    current_date = datetime.now().date()   
+    now = datetime.datetime.now() 
+    current_date = datetime.datetime.now().date()   
     kanji_pattern = re.compile(r'[\u4E00-\u9FFF]')
     
     times = []
@@ -105,7 +106,7 @@ def get_nobori_nearest_times(csv_file):
                     else:
                         destination = '新宿'
                     try:
-                        time = datetime.strptime(time_str, '%H:%M')
+                        time = datetime.datetime.strptime(time_str, '%H:%M')
                         time = time.replace(year=current_date.year, month=current_date.month, day=current_date.day)
                         times.append((time, destination))
                     except ValueError as e:
@@ -122,8 +123,8 @@ def get_nobori_nearest_times(csv_file):
     return nearest_times
 
 def get_kudari_nearest_times(csv_file):
-    now = datetime.now()
-    current_date = datetime.now().date()
+    now = datetime.datetime.now()
+    current_date = datetime.datetime.now().date()
     kanji_pattern = re.compile(r'[\u4E00-\u9FFF]')
     
     times = []
@@ -151,7 +152,7 @@ def get_kudari_nearest_times(csv_file):
                     else:
                         destination = '本厚木'
                     try:
-                        time = datetime.strptime(time_str, '%H:%M')
+                        time = datetime.datetime.strptime(time_str, '%H:%M')
                         time = time.replace(year=current_date.year, month=current_date.month, day=current_date.day)
                         times.append((time, destination))
                     except ValueError as e:
@@ -168,28 +169,42 @@ def get_kudari_nearest_times(csv_file):
     return nearest_times
 
 
+def isBizDay(DATE):
+    Date = datetime.date(int(DATE[0:4]), int(DATE[4:6]), int(DATE[6:8]))
+    if Date.weekday() >= 5 or jpholiday.is_holiday(Date):
+        #休日
+        return 0
+    else:     
+        return 1
+
 @app.route('/table')
 def get_table():
-    kudari_csv_file = '../odakyu/kudari_hejitsu.csv'
-    kudari_nearest_times = get_kudari_nearest_times(kudari_csv_file)
+    now_day = str(datetime.date.today()).replace('-', '')
+    if isBizDay(now_day) == 1:
+        kudari_csv_file = '../odakyu/kudari_hejitsu.csv'     
+        nobori_csv_file = '../odakyu/nobori_hejitsu.csv'           
+        today = '平日'
+    else:
+        kudari_csv_file = '../odakyu/kudari_kyujitsu.csv'     
+        nobori_csv_file = '../odakyu/nobori_kyujitsu.csv'
+        today = '休日'
 
-    nobori_csv_file = '../odakyu/nobori_hejitsu.csv'
+
+    now_time = datetime.datetime.now().strftime("%H:%M:%S")    
+    kudari_nearest_times = get_kudari_nearest_times(kudari_csv_file)
     nobori_nearest_times = get_nobori_nearest_times(nobori_csv_file)
 
     global kudari_table
     kudari_table = []
-    print("下り")
     for kudari_time, kudari_destination in kudari_nearest_times:    
         kudari_table.append({'出発時刻': kudari_time.strftime("%H:%M"), '目的地': kudari_destination})
 
-    print("上り")
     global nobori_table
     nobori_table = []
     for nobori_time, nobori_destination in nobori_nearest_times:    
         nobori_table.append({'出発時刻': nobori_time.strftime("%H:%M"), '目的地': nobori_destination})
 
-    now_time = datetime.now().strftime("%H:%M:%S")
-    return render_template('table.html', kudari_table=kudari_table, nobori_table=nobori_table, now_time=now_time)
+    return render_template('table.html', kudari_table=kudari_table, nobori_table=nobori_table, now_time=now_time, today=today)
 
 
 @app.route('/')
