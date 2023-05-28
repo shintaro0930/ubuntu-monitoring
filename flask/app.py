@@ -9,13 +9,12 @@ import jpholiday
 import json
 
 
+
 app = Flask(__name__, static_folder='static')
 
 train_info = {}
 
-
-
-
+# cssで色分けするために列車ごとのイメージカラーのインデックスを作っておく
 def get_train_color(text):
     if text == '小田急線':
         return 'odakyu-line'
@@ -33,35 +32,25 @@ def get_train_color(text):
         return 'chiyoda-line'
     else:
         return 'Error'
-    
-"""
-import json
-
-
-sample_dict = {'A': 'apple', 'B': 'banana', 'C': 'carrot', 'D': 'drink', 'E': 'egg'}
-
-with open('./sample.json', 'w') as f:
-    json.dump(sample_dict, f, indent=4)
-
-
-このコードを実行すると、以下のような JSON ファイルが出力されます。
-
-{
-    "A": "apple",
-    "B": "banana",
-    "C": "carrot",
-    "D": "drink",
-    "E": "egg"
-}
-"""    
 
 
 def get_content(text: str, url):
+    #　今日の日付を2023-05-23のような形で取得
     current_date = datetime.datetime.now().date().strftime("%Y-%m-%d")    
+    # この関数が実行された時間を12:34:56のような形で取得(それぞれ時:分:秒)
     current_time = datetime.datetime.now().strftime("%H:%M:%S")
     request = requests.get(url)
     soup = BeautifulSoup(request.text, 'html.parser')
     bool_trouble = soup.find('dd', class_='trouble')
+    # find('dd), class="trouble")にはできない。これはpythonが文法上でclassを持っているため。そのため、_(アンダーバー)が必要
+
+    """
+    @params
+
+    bool_trouble(boolean) : ddタグのclass=troubleのものがある場合(これは遅延していることを表す)、51行目のif文に突入
+    content(object) : pタグのオブジェクトを保持
+    
+    """
 
     if bool_trouble:
         content = bool_trouble.find('p')
@@ -90,8 +79,9 @@ def get_content(text: str, url):
                 "color": get_train_color(text)
         }
 
+    #jsonへの書き込み
+    # try構文は現在のjsonファイルを持ってきて、[{key:value}, {key:value}, {key:value} ...]構造を潰さないようにしている
     file_path = f"./delay-info/{text}.json"
-    
     try:
         with open(file_path, 'r', encoding='utf-8') as f:
             data = json.load(f)
@@ -100,12 +90,14 @@ def get_content(text: str, url):
 
     data.append(output)
 
+    #json.dumpはファイルへの書き込み。indent=4は各要素に対してindentを半角4つ分加えるように指定。
     with open(file_path, 'w', encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False, indent=4) 
 
     return output
 
 
+# 各路線の遅延情報をYahooから取得
 def update_train_info():
     current_time = datetime.datetime.now().strftime("%H時%M分")
     global train_info
@@ -119,12 +111,27 @@ def update_train_info():
             get_content('学研都市線', 'https://transit.yahoo.co.jp/diainfo/271/0'),
             get_content('副都心線', 'https://transit.yahoo.co.jp/diainfo/540/0'),
             get_content('千代田線', 'https://transit.yahoo.co.jp/diainfo/136/0')
+            # これ以降にget_contnt('X線', 'X線のYahoo路線情報サイト')を指定すると自動でapp.htmlに反映される
         ]
     }
 
+
+# 新宿方面の直近5つの時刻表を取得
 def get_nobori_nearest_times(csv_file):
+    """
+    @params
+
+    row(list) : 時間帯別の時刻表を保持。csvの0列目は時間を表記しており、"X時, "になっている。 詳しくはcsvファイルを見ればわかる。
+    hour(str) : X時の"X"だけを取得。ぱっと見、数字でint型と思いきや、str型に注意
+    minute(str) : {hour}時に対する出発時刻の"分"を保持. time_strで 11:28 のようにしている
+
+
+    """
+
+
     now = datetime.datetime.now() 
     current_date = datetime.datetime.now().date()   
+    # [\u4E00-\u9FFF]は数字の後ろについてる漢字を取得している。我, 松, etc.
     kanji_pattern = re.compile(r'[\u4E00-\u9FFF]')
     
     times = []
@@ -132,7 +139,9 @@ def get_nobori_nearest_times(csv_file):
         reader = csv.reader(file)
         for row in reader:
             if len(row) > 1:
+                #csvの1列目は時間情報で、X時になっているので、"時"を消す
                 hour = row[0].replace('時', '')
+                #2列目以降のその時間帯の時刻表をいじる
                 for minute in row[1:]:
                     time_str = hour + ':' + minute
                     kanji_match = kanji_pattern.search(time_str)
@@ -161,15 +170,19 @@ def get_nobori_nearest_times(csv_file):
                         pass
                     time_str = ''
     
-    nearest_times = []
+    #ここで、直近の時刻表を取得している
+    nearest_times:list = []
     for time, destination in times:
         if time >= now:
             nearest_times.append((time, destination))
+        # 5　を 3 に変更すると、直近3つになるし、 if文そのものを消すと、その日の始発から終電までを取得
         if len(nearest_times) == 5:
             break
     
     return nearest_times
 
+# 小田原/藤沢方面の直近5つの時刻表を取得
+# 詳細は117行目へ
 def get_kudari_nearest_times(csv_file):
     now = datetime.datetime.now()
     current_date = datetime.datetime.now().date()
@@ -207,6 +220,7 @@ def get_kudari_nearest_times(csv_file):
                         pass
                     time_str = ''
     
+    #詳しくは117行目へ
     nearest_times = []
     for time, destination in times:
         if time >= now:
@@ -217,6 +231,7 @@ def get_kudari_nearest_times(csv_file):
     return nearest_times
 
 
+# 変数Dateが平日なのか休日/祝日なのかを持ってくる。
 def isBizDay(DATE):
     Date = datetime.date(int(DATE[0:4]), int(DATE[4:6]), int(DATE[6:8]))
     if Date.weekday() >= 5 or jpholiday.is_holiday(Date):
@@ -225,9 +240,15 @@ def isBizDay(DATE):
     else:     
         return 1
 
+
+
+# 生田駅の時刻表を出力
+# https://localhost:8000/table にアクセスすると表示
 @app.route('/table')
 def get_table():
+    #now_dayの変換はisBizDay()に合うように変形
     now_day = str(datetime.date.today()).replace('-', '')
+    #平日か休日かでダイヤが別
     if isBizDay(now_day) == 1:
         kudari_csv_file = '../odakyu/kudari_hejitsu.csv'     
         nobori_csv_file = '../odakyu/nobori_hejitsu.csv'           
@@ -243,6 +264,7 @@ def get_table():
     nobori_nearest_times = get_nobori_nearest_times(nobori_csv_file)
 
     global kudari_table
+    #関数で持ってきた直近nこ(初期値は5)の時刻および、目的地をdict型にする
     kudari_table = []
     for kudari_time, kudari_destination in kudari_nearest_times:    
         kudari_table.append({'出発時刻': kudari_time.strftime("%H:%M"), '目的地': kudari_destination})
@@ -252,9 +274,16 @@ def get_table():
     for nobori_time, nobori_destination in nobori_nearest_times:    
         nobori_table.append({'出発時刻': nobori_time.strftime("%H:%M"), '目的地': nobori_destination})
 
+    """
+    htmlに渡す。その際にhtml側で変数を宣言したときに、python側の宣言とマッチさせるようにしておく
+
+    ex.
+    kudari_table=kudari_table : 左がhtmlの変数。右がこのファイルの変数。htmlでkudari_tableが宣言された際に、その変数にはこちらのkudari_tableを渡すようにしている。
+    """ 
     return render_template('table.html', kudari_table=kudari_table, nobori_table=nobori_table, now_time=now_time, today=today)
 
 
+# https://localhost:8000/
 @app.route('/')
 def display_train_info():
     update_train_info()
@@ -265,8 +294,10 @@ def display_train_info():
 
 if __name__ == '__main__':
     update_train_info()
+    # ポート番号は8000番を指定
     app.run(port=8000)
 
+    # 5分おきに更新されるように設定
     while True:
         time(300)
         app.run(port=8000)

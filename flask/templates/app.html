@@ -4,6 +4,11 @@
 <head>
     <meta charset="UTF-8">
     <title>列車遅延情報</title>
+    <!-- 
+        Flaskはcssの指定方法が独特 
+            static: staticフォルダを指定する(staticは静的ファイルを保存する場所らしい)
+            filename: ここで使うcssのファイルを指定する
+    -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
     <meta http-equiv="refresh" content="100" URL="app.html">
 </head>
@@ -12,9 +17,21 @@
     <div id="main-container">
         <h1 id="title">列車遅延情報</h1>
         <div id="last-time-tag">
+            <!-- 
+                htmlで変数を扱う際は {{ 変数名 }}とする
+                
+                train_info.current_time : pythonからもらったtrain_info(dict型)
+                train_info.status : 列車が遅延しています or 通常運転です
+                train_info.content: 遅延している場合はその内容を。  (通常運転の場合はNoneを保持しており、それは不要なので、「特に情報はありません」と出力する)
+            -->
             <p id="last-time">最終更新時刻: {{ train_info.current_time }}</p>
         </div>
         <ul>
+            <!-- 
+                pythonのdict型を順番に表示しているイメージ
+
+                if.info.status,endswith('str') : strという文字列がinfo.statusの末尾に含まれている場合。ということ
+            -->
             {% for info in train_info.train_info %}
             <li>
                 {% if info.status.endswith('！') %}

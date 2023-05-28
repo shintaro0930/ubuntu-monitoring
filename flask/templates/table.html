@@ -4,12 +4,13 @@
 <head>
     <meta http-equiv="refresh" content="1" URL="app.html">
     <title>生田駅の時刻表</title>
+    <!-- 詳しくはapp.htmlを -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/table.css') }}">
 </head>
 
 <body>
     <h1 style="text-align: center;">現在の時間: {{ now_time }}</h1>
-    <p style="text-align: center;">今日は{{today}}ダイヤです</p>
+    <p style="text-align: center;">今日は{{ today }}ダイヤです</p>
     <h1 id="title">上り(新宿方面)</h1>
     <table>
         <tr>
