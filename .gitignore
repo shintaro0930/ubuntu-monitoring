@@ -1,2 +1,5 @@
 /__pycache__
 /flask/nohup.out
+/flask/delay-info/
+/odakyu/kudari.csv
+/odakyu/nobori.csv
