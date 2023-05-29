@@ -232,6 +232,7 @@ def get_kudari_nearest_times(csv_file):
 
 
 # 変数Dateが平日なのか休日/祝日なのかを持ってくる。
+# 参考リンク: https://qiita.com/hid_tanabe/items/3c5e6e85c6c65f7b38be
 def isBizDay(DATE):
     Date = datetime.date(int(DATE[0:4]), int(DATE[4:6]), int(DATE[6:8]))
     if Date.weekday() >= 5 or jpholiday.is_holiday(Date):
