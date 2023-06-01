@@ -83,6 +83,7 @@ def get_content(text: str, url):
     # try構文は現在のjsonファイルを持ってきて、[{key:value}, {key:value}, {key:value} ...]構造を潰さないようにしている
     file_path = f"./delay-info/{text}.json"
 
+    # 通常運転の場合は書き込まない
     if not output["status"].startswith(f"{text}は通常運転です"):
         try:
             with open(file_path, 'r', encoding='utf-8') as f:
