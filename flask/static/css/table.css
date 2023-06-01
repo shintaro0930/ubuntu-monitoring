@@ -25,10 +25,33 @@ table {
 th,
 td {
     border: 1px solid #000000;
-    padding: 0.6em;
     text-align: center;
+    padding: 0.6em;
+    border-bottom: 1px solid #ddd;
+    border-left: 0px;
+    border-right: 0px;
 }
 
 td {
     font-size: 1.3em;
+}
+
+th {
+    background-color: #ff9ea1;
+    font-size: 2.2em;
+}
+
+tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+.rounded-table {
+    border: 0.4em solid #1651ff;
+    overflow: hidden;
+    border-radius: 0.6em;
+}
+
+th:not(:last-child),
+td:not(:last-child) {
+    border-right: 1px solid black;
 }

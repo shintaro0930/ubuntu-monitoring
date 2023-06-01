@@ -10,36 +10,43 @@
 
 <body>
     <h1 style="text-align: center;">現在の時間: {{ now_time }}</h1>
-    <p style="text-align: center;">今日は{{ today }}ダイヤです</p>
+    <p id="today"
+        style="font-size: 1.2em; text-align: center; color: {% if is_weekday %}red{% else %}black{% endif %};">今日は{{
+        today
+        }}ダイヤです</p>
+
     <h1 id="title">上り(新宿方面)</h1>
-    <table>
-        <tr>
-            <th>出発時刻</th>
-            <th>目的地</th>
-        </tr>
-        {% for row in nobori_table %}
-        <tr>
-            <td>{{ row['出発時刻'] }}</td>
-            <td>{{ row['目的地'] }}</td>
-        </tr>
-        {% endfor %}
-    </table>
+    <div class="rounded-table">
+        <table>
+            <tr>
+                <th>出発時刻</th>
+                <th>目的地</th>
+            </tr>
+            {% for row in nobori_table %}
+            <tr>
+                <td>{{ row['出発時刻'] }}</td>
+                <td>{{ row['目的地'] }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
     <br>
-    <hr>
     <br>
     <h1 id="title">下り(小田原/藤沢方面)</h1>
-    <table>
-        <tr>
-            <th>出発時刻</th>
-            <th>目的地</th>
-        </tr>
-        {% for row in kudari_table %}
-        <tr>
-            <td>{{ row['出発時刻'] }}</td>
-            <td>{{ row['目的地'] }}</td>
-        </tr>
-        {% endfor %}
-    </table>
+    <div class="rounded-table">
+        <table>
+            <tr>
+                <th>出発時刻</th>
+                <th>目的地</th>
+            </tr>
+            {% for row in kudari_table %}
+            <tr>
+                <td>{{ row['出発時刻'] }}</td>
+                <td>{{ row['目的地'] }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
 </body>
 
 </html>
