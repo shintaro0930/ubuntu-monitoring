@@ -82,17 +82,18 @@ def get_content(text: str, url):
     #jsonへの書き込み
     # try構文は現在のjsonファイルを持ってきて、[{key:value}, {key:value}, {key:value} ...]構造を潰さないようにしている
     file_path = f"./delay-info/{text}.json"
-    try:
-        with open(file_path, 'r', encoding='utf-8') as f:
-            data = json.load(f)
-    except FileNotFoundError:
-        data = []
 
-    data.append(output)
+    if not output["status"].startswith(f"{text}は通常運転です"):
+        try:
+            with open(file_path, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+        except FileNotFoundError:
+            data = []
 
-    #json.dumpはファイルへの書き込み。indent=4は各要素に対してindentを半角4つ分加えるように指定。
-    with open(file_path, 'w', encoding='utf-8') as f:
-        json.dump(data, f, ensure_ascii=False, indent=4) 
+        data.append(output)
+
+        with open(file_path, 'w', encoding='utf-8') as f:
+            json.dump(data, f, ensure_ascii=False, indent=4)
 
     return output
 
